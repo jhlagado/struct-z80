@@ -1,0 +1,61 @@
+.include "struct-macros.z80"
+
+ld A,1
+or a
+_if z
+    nop
+    nop
+_else
+    nop
+    nop
+    nop
+_endif
+nop
+
+ld B, 3
+_do
+    dec B
+_while nz
+    nop
+_enddo
+nop
+
+ld B, 5
+_do
+    ld A,3
+    _do
+        nop
+        dec A
+    _until Z
+    dec B
+_until Z
+nop
+
+ld a,30
+_switch
+
+    cp 1
+    _case z
+        ld a, $10
+    _endcase
+
+    cp 2
+    _case z
+        ld a, $20
+    _endcase
+
+    cp 3
+    _case z
+        ld a, $30
+    _endcase
+
+    cp 4
+    _case z
+        ld a, $40
+    _endcase
+
+    ld a, 255           ; default case
+_endswitch
+nop
+
+STRUC_CHECK
