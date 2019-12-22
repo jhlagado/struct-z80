@@ -1,10 +1,10 @@
 # struct-z80 - Structured Programming in Z80 Assembly
----
+```
 title: Structured Programming in Z80 Assembly 
 published: true
 description: Using assembler macros to write high level code
 tags: Z80, macros, assembler, structured programming
----
+```
 One of the great pains of writing assembly language for old-school microprocessors such as the Z80 is the complexity of implementing algorithms due to the lack of high-level control and looping structures in machine code. All you have are jumps and labels and there's really no exaggeration to the claim that [GOTOs are considered harmful](https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf) 
 
 ...at least to your state of mental well-being! ;-) 
