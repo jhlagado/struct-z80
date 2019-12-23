@@ -230,10 +230,62 @@ _endif
 
 Rather than implement this as an "elseif", I'm going to use an approach that is similar to C's "switch" statement. 
 
+```
+ld A, input
+_switch
+
+    cp 'a'          ; test for 'a'
+    _case z
+        ld A,'A'
+    _endcase
+
+    cp 'b'          ; test for 'b'
+    _case z
+        ld A,'B'
+    _endcase
+    
+    cp 'c'          ; test for 'c'
+    _case z
+        ld A,'C'
+    _endcase
+
+    ld A,'D'        ; default case
+
+_endswitch
+```
+
+With this set of macros between `_switch` and `_endswitch`, each case is tested in turn and if the condition is met the code between the immediately following `_case` and `_endcase` is executed followed by a jump to `_endswitch`. If the condition is not met then it falls through to the next test and so on. If none of the cases execute then execution falls through to the "default" case just before the `_endswitch`.
+
+```
+.macro _switch
+    jr L_%%M
+    jp $                    ; jump to endswitch
+    STRUC_PUSH $
+L_%%M:
+.endm
+
+.macro _case, cond
+    jr cond, L_%%M
+    jp $                    ; jump to endcase
+    STRUC_PUSH $
+L_%%M:
+.endm
+
+.macro _endcase
+    jp STRUC_2 - 3          ; jump to exit
+    _JP_FORWARD
+    STRUC_POP
+.endm
+
+.macro _endswitch
+    _JP_FORWARD
+    STRUC_POP
+.endm
+```
 
 ## Loops
 
-You can also do loops pretty easily as well with do...<test> while cond...enddo and _do...<test> _until cond:
+You can also do loops pretty easily as well with `_do`...<test> `_while` cond ... `_enddo` and `_do` ... <test> `_until` cond:
 
 ```
 .macro _do
