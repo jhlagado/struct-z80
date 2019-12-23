@@ -228,7 +228,7 @@ _else
 _endif
 ```
 
-One solution to this is to implement an approach that is similar to C's "switch" statement. 
+One solution to this nesting is the `_switch` macro. 
 
 ```
 ld A, input
