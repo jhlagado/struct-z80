@@ -149,15 +149,15 @@ The `_if` macro contains a conditional jump to the "else" clause if the conditio
 ```
 .macro _if, flag
     jr flag, L_%%M
-    jp $
+    jp $              ; placeholder jump to _else or _endif
     STRUC_PUSH $
 L_%%M:
 .endm
 
 .macro _else
-    jp  $
+    jp $              ; placeholder jump to _endif
     JUMP_FWD
-    STRUC_TOP .set $          ;reuse TOS
+    STRUC_TOP .set $  ;reuse top of stack
 .endm
 
 .macro _endif
@@ -289,20 +289,20 @@ The implementation of the switch macro is as follows:
 ```
 .macro _switch
     jr L_%%M
-    jp $                    ; jump to endswitch
+    jp $            ; placeholder jump to endswitch
     STRUC_PUSH $
 L_%%M:
 .endm
 
 .macro _case, flag
     jr flag, L_%%M
-    jp $                    ; jump to endcase
+    jp $            ; placeholder jump to endcase
     STRUC_PUSH $
 L_%%M:
 .endm
 
 .macro _endcase
-    jp STRUC_2 - 3          ; jump to exit
+    jp STRUC_2 - 3  ; jump to placeholder jump to endswitch
     JUMP_FWD
     STRUC_POP
 .endm
@@ -412,7 +412,7 @@ The implementation of macros for looping are as follows:
 
 .macro _while, flag
     jr flag, L_%%M
-    jp $
+    jp $            ; placeholder jump to _enddo
     STRUC_PUSH $
 L_%%M:
 .endm

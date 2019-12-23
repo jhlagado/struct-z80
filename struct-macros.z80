@@ -1,10 +1,12 @@
 ;-------------------------------------------------------------------------------
+;
 ; Assembler Structured Control-flow Macros
 ; by John Hardy 2019
 ;
 ; Inspired by the work of Garth Wilson and Dave Keenan
 ; http://wilsonminesco.com/StructureMacros/
 ; http://dkeenan.com/AddingStructuredControlFlowToAnyAssembler.htm
+;
 ;-------------------------------------------------------------------------------
 
 STRUC_COUNT .set 0
@@ -71,15 +73,15 @@ STRUC_TOP .set 0
 
 .macro _if, flag
     jr flag, L_%%M
-    jp $
+    jp $              ; placeholder jump to _else or _endif
     STRUC_PUSH $
 L_%%M:
 .endm
 
 .macro _else
-    jp  $
+    jp $              ; placeholder jump to _endif
     JUMP_FWD
-    STRUC_TOP .set $          ;reuse TOS
+    STRUC_TOP .set $  ;reuse top of stack
 .endm
 
 .macro _endif
@@ -105,20 +107,20 @@ L_%%M:
 
 .macro _switch
     jr L_%%M
-    jp $                    ; jump to endswitch
+    jp $            ; placeholder jump to endswitch
     STRUC_PUSH $
 L_%%M:
 .endm
 
 .macro _case, flag
     jr flag, L_%%M
-    jp $                    ; jump to endcase
+    jp $            ; placeholder jump to endcase
     STRUC_PUSH $
 L_%%M:
 .endm
 
 .macro _endcase
-    jp STRUC_2 - 3          ; jump to exit
+    jp STRUC_2 - 3  ; jump to placeholder jump to endswitch
     JUMP_FWD
     STRUC_POP
 .endm
@@ -140,7 +142,7 @@ L_%%M:
 
 .macro _while, flag
     jr flag, L_%%M
-    jp $
+    jp $            ; placeholder jump to _enddo
     STRUC_PUSH $
 L_%%M:
 .endm
