@@ -190,9 +190,9 @@ NOTE: I'm using `nop` here to stand it for any Z80 instruction
 
 ## Switch case
 
-When you have a lot of alternatives to deal with `_if` ... `_else` ... `_endif` becomes nested and harder to read. To deal with this we need something the ability to chain if test without adding nesting.
+When you have a lot of alternatives to deal with `_if` ... `_else` ... `_endif` becomes nested and harder to read. 
 
-Consider the following scenario in a structured language:
+For example, consider the following scenario in a structured language:
 
 ```
 let a = input
@@ -206,7 +206,7 @@ if (a == 'a') {
     a = 'D';
 }
 ```
-Without some kind of "elseif" construct our macro version would look like this:
+Without some kind way of chaining "if" statements we end up with a heavily nested sequence like this:
 
 ```
 ld A, input
@@ -228,7 +228,7 @@ _else
 _endif
 ```
 
-Rather than implement this as an "elseif", I'm going to use an approach that is similar to C's "switch" statement. 
+One solution to this is to implement an approach that is similar to C's "switch" statement. 
 
 ```
 ld A, input
@@ -254,7 +254,9 @@ _switch
 _endswitch
 ```
 
-With this set of macros between `_switch` and `_endswitch`, each case is tested in turn and if the condition is met the code between the immediately following `_case` and `_endcase` is executed followed by a jump to `_endswitch`. If the condition is not met then it falls through to the next test and so on. If none of the cases execute then execution falls through to the "default" case just before the `_endswitch`.
+With this set of macros between `_switch` and `_endswitch`, each case is tested in turn and, if the condition is met, the immediately following `_case` is executed followed by a jump to `_endswitch`. If the condition fails then it falls through to the next test and so on. If none of the cases execute then execution falls through to the "default" case just before the `_endswitch`.
+
+The implementation is as follows:
 
 ```
 .macro _switch
