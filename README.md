@@ -5,6 +5,7 @@ published: true
 description: Using assembler macros to write high level code
 tags: Z80, macros, assembler, structured programming
 ```
+
 One of the great pains of writing assembly language for old-school microprocessors such as the Z80 is the complexity of implementing algorithms due to the lack of high-level control and looping structures in machine code. All you have are jumps and labels and there's really no exaggeration to the claim that [GOTOs are considered harmful](https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf) 
 
 ...at least to your state of mental well-being! ;-) 
@@ -75,7 +76,20 @@ STRUC_TOP .set 0
 .endm
 ```
 
-## Step 2: implement IF, ELSE and ENDIF macros:]
+Also we need a utility macro _JP_FORWARD which we use to go back and rewrite jump addresses for addresses we don't resolve until later.
+
+```
+.macro _JP_FORWARD
+    CUR_ADR .set $
+    org STRUC_TOP - 2
+    dw CUR_ADR
+    org CUR_ADR
+.endm
+
+```
+
+## Step 2: implement _if, _else and _endif macros:
+
 In assembly language, program logic is obscured by the way it is expressed in terms of state flags and branches. Consider this simple example of inverting a bit value which we'll first express in a structured language:
 
 ```
@@ -128,18 +142,12 @@ L_%%M:
 
 .macro _else
     jp  $
-    CUR_ADR .set $
-    org STRUC_TOP - 2
-    dw CUR_ADR
-    org CUR_ADR
+    _JP_FORWARD
     STRUC_TOP .set $          ;reuse TOS
 .endm
 
 .macro _endif
-    CUR_ADR .set $
-    org STRUC_TOP - 2
-    dw CUR_ADR
-    org CUR_ADR
+    _JP_FORWARD
     STRUC_POP
 .endm
 ```
@@ -180,35 +188,70 @@ _endif
 
 NOTE: I'm using `nop` here to stand it for any Z80 instruction
 
+## Switch case
+
+When you have a lot of alternatives to deal with `_if` ... `_else` ... `_endif` becomes nested and harder to read. To deal with this we need something the ability to chain if test without adding nesting.
+
+Consider the following scenario in a structured language:
+
+```
+let a = input
+if (a == 'a') {
+    a = 'A';
+} elseif (a = 'b') {
+    a = 'B';
+} elseif (a = 'c') {
+    a = 'C';
+} else {
+    a = 'D';
+}
+```
+Without some kind of "elseif" construct our macro version would look like this:
+
+```
+ld A, input
+cp 'a'
+_if 
+    ld A,'A'
+_else
+    cp 'b'
+    _if 
+        ld A,'B'
+    _else
+        cp 'c'
+        _if 
+            ld A,'C'
+        _else
+            ld A,'D'
+        _endif
+    _endif
+_endif
+```
+
+Rather than implement this as an "elseif", I'm going to use an approach that is similar to C's "switch" statement. 
+
 
 ## Loops
 
-You can also do loops pretty easily as well with DO...WHILE...WEND and DO...UNTIL:
+You can also do loops pretty easily as well with do...<test> while cond...enddo and _do...<test> _until cond:
 
 ```
-.macro _DO
+.macro _do
     STRUC_PUSH $
 .endm
 
-.macro _WHILE, cond
+.macro _while, cond
     jr cond, L_%%M
-    jr $
+    jp $
     STRUC_PUSH $
 L_%%M:
 .endm
 
-.macro _WEND
+.macro _enddo
     jr STRUC_2
-    _JR_FORWARD
+    _JP_FORWARD
     STRUC_POP
     STRUC_POP
-.endm
-
-.macro _UNTIL, cond
-    jr cond, L_%%M
-    jp STRUC_TOP
-    STRUC_POP
-L_%%M:
 .endm
 ```
 
@@ -216,25 +259,33 @@ For example:
 
 ```
 ld B, 3
-_DO
+_do
     dec B
-_WHILE nz
+_while nz
     nop
-_WEND
+_enddo
 ```
 
 and:
 
 ```
 ld B, 5
-_DO
+_do
     ld A,3
-    _DO
+    _do
         nop
         dec A
-    _UNTIL Z
+    _until Z
     dec B
-_UNTIL
+_until
+```
+
+and finally:
+
+```
+_do
+    nop
+_forever
 ```
 
 Note: in some assemblers (unfortunately not asm80) you can stop the stack operations from adding noise to your listings by using an assembler directive like:
@@ -249,6 +300,10 @@ and
 So there you have it, a pretty painless way to improve the readability of your code and increase your productivity as an assembly language programmer (you think I'm exaggerating but, no, I genuinely believe this). The best thing is that if you examine the final generated machine code you'll see that this code does not look weird and doesn't really add overhead to the way you would have done it natively. 
 
 There are possible optimisations of course. For example, you could calculate whether the  jumps should be near or far jumps and replace JP with JR in those cases. You could use a macro to calculate this. 
+
+A repo of all the macros discussed here can be found here:
+
+[struct-z80](https://github.com/jhlagado/struct-z80)
 
 Anyway, if you do give it a try let me know how it goes! 
 
