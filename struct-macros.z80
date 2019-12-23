@@ -9,6 +9,8 @@
 
 STRUC_COUNT .set 0
 
+STRUC_12 .set 0
+STRUC_11 .set 0
 STRUC_10 .set 0
 STRUC_9 .set 0
 STRUC_8 .set 0
@@ -23,6 +25,8 @@ STRUC_TOP .set 0
 .macro STRUC_PUSH, arg
     STRUC_COUNT .set STRUC_COUNT + 1
 
+    STRUC_12 .set STRUC_11
+    STRUC_11 .set STRUC_10
     STRUC_10 .set STRUC_9
     STRUC_9 .set STRUC_8
     STRUC_8 .set STRUC_7
@@ -47,36 +51,26 @@ STRUC_TOP .set 0
     STRUC_7 .set STRUC_8
     STRUC_8 .set STRUC_9
     STRUC_9 .set STRUC_10
-    STRUC_10 .set 0
+    STRUC_10 .set STRUC_11
+    STRUC_11 .set STRUC_12
+    STRUC_12 .set 0
 .endm
 
-.macro _JP_FORWARD
+.macro JUMP_FWD
     CUR_ADR .set $
     org STRUC_TOP - 2
     dw CUR_ADR
     org CUR_ADR
 .endm
 
-.macro STRUC_CHECK
-    .if	STRUC_COUNT ?> 10
-        .pstr "Control-flow stack overflow"
-    .endif
-    .if	STRUC_COUNT ?< 0
-        .pstr "Control-flow stack underflow"
-    .endif
-    .if	STRUC_COUNT != 0
-        .pstr "Control-flow stack is unbalanced"
-    .endif
-.endm
-
-; _if
+; _if flag
 ;     ...
 ; _else
 ;     ...
 ; _endif
 
-.macro _if, cond
-    jr cond, L_%%M
+.macro _if, flag
+    jr flag, L_%%M
     jp $
     STRUC_PUSH $
 L_%%M:
@@ -84,24 +78,24 @@ L_%%M:
 
 .macro _else
     jp  $
-    _JP_FORWARD
+    JUMP_FWD
     STRUC_TOP .set $          ;reuse TOS
 .endm
 
 .macro _endif
-    _JP_FORWARD
+    JUMP_FWD
     STRUC_POP
 .endm
 
 ; _switch
 ;
 ;     ...test
-;     _case
+;     _case flag
 ;         ...
 ;     _endcase
 ;
 ;     ...test
-;     _case
+;     _case flag
 ;         ...
 ;     _endcase
 ;
@@ -116,8 +110,8 @@ L_%%M:
 L_%%M:
 .endm
 
-.macro _case, cond
-    jr cond, L_%%M
+.macro _case, flag
+    jr flag, L_%%M
     jp $                    ; jump to endcase
     STRUC_PUSH $
 L_%%M:
@@ -125,18 +119,18 @@ L_%%M:
 
 .macro _endcase
     jp STRUC_2 - 3          ; jump to exit
-    _JP_FORWARD
+    JUMP_FWD
     STRUC_POP
 .endm
 
 .macro _endswitch
-    _JP_FORWARD
+    JUMP_FWD
     STRUC_POP
 .endm
 
 ; _do
 ;     ...test
-;     _while
+;     _while flag
 ;     ...
 ; _enddo
 
@@ -144,8 +138,8 @@ L_%%M:
     STRUC_PUSH $
 .endm
 
-.macro _while, cond
-    jr cond, L_%%M
+.macro _while, flag
+    jr flag, L_%%M
     jp $
     STRUC_PUSH $
 L_%%M:
@@ -153,17 +147,17 @@ L_%%M:
 
 .macro _enddo
     jr STRUC_2
-    _JP_FORWARD
+    JUMP_FWD
     STRUC_POP
     STRUC_POP
 .endm
 
 ; _do
 ;     ...test
-; _until
+; _until flag
 
-.macro _until, cond
-    jr cond, L_%%M
+.macro _until, flag
+    jr flag, L_%%M
     jp STRUC_TOP
     STRUC_POP
 L_%%M:
@@ -175,5 +169,14 @@ L_%%M:
 
 .macro _forever
     jp STRUC_TOP
+    STRUC_POP
+.endm
+
+; _do
+;     ...test
+; _untilZero
+
+.macro _untilZero
+    djnz STRUC_TOP
     STRUC_POP
 .endm

@@ -58,4 +58,8 @@ _switch
 _endswitch
 nop
 
-STRUC_CHECK
+ld B, 5
+_do
+    nop
+_untilZero
+nop
