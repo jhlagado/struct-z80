@@ -33,7 +33,7 @@ See:
 
 ## Create a stack with assembler variables.
 
-Programming structures are recursive by nature and so our first task should be to build a stack. assemblers weren't really designed for meta-programming but you can implement a stack structure by using a bucket brigade of re-assignable assembler variables. I've made my stack twelve levels deep but you may decide to make this stack even deeper which is an easy thing to do.
+Programming structures are recursive by nature and so our first task should be to build a stack. Assemblers weren't really designed for meta-programming but you can implement a stack structure by using a bucket brigade of re-assignable assembler variables. I've made my stack twelve levels deep but you may decide to make this stack even deeper which is an easy thing to do.
 
 ```
 STRUC_COUNT .set 0
