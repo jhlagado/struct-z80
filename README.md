@@ -1,29 +1,29 @@
-# struct-z80 - Structured Programming in Z80 Assembly
+# struct-z80 - Structured Programming in Z80 Assembly Language
 
 ```
-title: Structured Programming in Z80 Assembly
+title: Structured Programming in Z80 Assembly Language
 published: true
-description: Using assembler macros to write high level code
+description: Using assembly macros to write high level code
 tags: Z80, macros, assembler, structured programming
 ```
 
-One of the great pains of writing assembly language for old-school microprocessors such as the Z80 is the complexity of implementing algorithms due to the lack of high-level control and looping structures. All you have are jumps and labels and nothing help you enforce the structure of your code.
+One of the great pains of writing assembly language for old-school microprocessors such as the Z80 is the complexity of implementing algorithms due to the lack of high-level control and looping structures. All you have are conditional jumps and labels and nothing help you enforce the structure of your code.
 
-It's not an exaggeration to the claim that [GOTOs are considered harmful](https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf) ...at least to your state of mental well-being! ;-)
+It's not exaggerating when someone claims that [GOTOs are considered harmful](https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf) ...at least to your state of mental well-being! ;-)
 
-This lack of structuring is what often ends up driving programmers toward languages like high-level languages such as C which people often mistakenly think of as "low level", "assembler++" or "close to the metal". On 8-bit CPUs, however, this far from the truth and C adds a lot of overhead to your machine-cycle and memory-cell constrained code. This is why assembly language is still the tool of choice for 8-bit programming despite it also being a major source of frustration.
+This lack of structure is what often ends up driving programmers toward high-levellanguages such as C which people often mistakenly think of as "low level", "assembler++" or "close to the metal". On 8-bit CPUs, however, this far from the truth and C adds a lot of overhead to your machine-cycle and memory-cell constrained code. This is why assembly language is still the tool of choice for 8-bit programming despite it also being a major source of frustration.
 
-Macros are a huge boon to writing assembly langauge. Recently I starting using a set inspired by a coding pattern invented by Garth Wilson and (quite separately) Dave Keenan which enabled me to write something close to structured programs in Assembler.
+Macros are a huge boon to writing assembly language. Recently I starting using a set inspired by a coding pattern invented by Garth Wilson and (quite separately by) Dave Keenan which enabled me to write structured programs in assembly.
 
 See:
 
 [Program Structures with Macros](http://wilsonminesco.com/StructureMacros/)
 
-[Adding Structured Control Flow to Any Assembler](http://dkeenan.com/AddingStructuredControlFlowToAnyAssembler.htm)
+[Adding Structured Control Flow to Any assembler](http://dkeenan.com/AddingStructuredControlFlowToAnyassembler.htm)
 
 Both authors were heavily influenced by the [Forth programming language](https://www.forth.com/forth/) and the way that it introduced high-level structured programming concepts to low level programming years before systems languages like C and Pascal became commonplace.
 
-The examples I'm giving here were written using the asm80 macro system but I'm sure they could be easily adapted to your own favourite assembler's macro syntax.
+The examples I'm giving here were written using the asm80 macro system but I'm sure they could be easily adapted to your own favourite assembly's macro syntax.
 
 See:
 
@@ -31,9 +31,9 @@ See:
 
 [Asm80: Macros](https://maly.gitbooks.io/asm80/macros.html)
 
-## Step one: Create a stack with assembler variables.
+## Create a stack with assembler variables.
 
-Programming structures are recursive in nature and the first task is to build a stack. This bit may seem a bit hacky but you can implement a stack by using a bucket brigade of re-assignable assembler variables. I've made my stack twelve levels deep but you may decide to make this stack deeper which is easy to do.
+Programming structures are recursive by nature and so our first task should be to build a stack. assemblers weren't really designed for meta-programming but you can implement a stack structure by using a bucket brigade of re-assignable assembler variables. I've made my stack twelve levels deep but you may decide to make this stack even deeper which is an easy thing to do.
 
 ```
 STRUC_COUNT .set 0
@@ -86,7 +86,7 @@ STRUC_TOP .set 0
 .endm
 ```
 
-Also we need a utility macro `JUMP_FWD` with which we can use to go back and rewrite jump addresses for addresses we can't resolve until later.
+Also we need a utility macro `JUMP_FWD` with which we can use to go back and rewrite jump addresses that we can't resolve until later.
 
 ```
 .macro JUMP_FWD
@@ -98,9 +98,9 @@ Also we need a utility macro `JUMP_FWD` with which we can use to go back and rew
 
 ```
 
-## Step 2: implement \_if, \_else and \_endif macros:
+## Implement structured programming macros:
 
-In assembly language, program logic is obscured by the way it is expressed in terms of state flags and branches. Consider this simple example of inverting a binary value which we'll first express in a structured language:
+In assembly language, program logic is obscured by the way it gets expressed in terms of state flags and branches. Consider this simple example of inverting a binary value which we'll first express in a structured language:
 
 ```
 let a = input;
@@ -112,7 +112,7 @@ if (a == 0) {
 let result = a;
 ```
 
-In assembly language, you could load the accumulator with the input and compare it with zero. This may set the zero flag. If the test fails could branch conditionally over the code in the "then" clause and go to the "else" clause. If the test succeeds it could execute the "then" clause but then we want to skip over the "else" clause with an unconditional branch to the end of the if statement (i.e. the "endif" label).
+In assembly language, we could load the accumulator with the input and compare it with zero. This may or may not set the zero flag. If the flag is false (test fails) we could jump conditionally over the code in the "then" section and go to the "else" section. If the test succeeds we could execute the "then" section but then we want to skip over the "else" section with an unconditional branch to the end of the if statement (i.e. to "endif").
 
 ```
     ld a,(input)
@@ -142,9 +142,7 @@ ld (result),a
 
 In this arrangement we are using macros. I am using an underscore in front to distinguish these macros from other uses of these words.
 
-You'll notice that in this assembly code, we have no explicit branches and no labels to confuse the reader. Each macro `_if`, `_else` and `_endif` expands out into code which will be very similar to the hand-written assembly code.
-
-The `_if` macro contains a conditional jump to the "else" clause if the condition is not met. Because the `_else` macro always "bookends" with `_if`, it begins with a jump that allows execution from the accompanying "then" clause to jump to the "endif" point.
+You'll notice that in this code, we have no explicit branches and no labels to confuse the reader. Each macro `_if`, `_else` and `_endif` expands out into code that is very similar to the hand-written assembly code.
 
 ```
 .macro _if, flag
@@ -172,9 +170,9 @@ The way this works is the `_if` sets up a jump on condition flag which, if the t
 
 The problem to solve is that `_if` cannot know where the `_else` or `_endif` will occur so it writes the opcode for the jump and a placeholder value in the jump address. It then pushes the address of this jump on the assembler stack so it can be found again later.
 
-When an `_else` is encountered, it looks on the stack for the address of the last `_if` occurrence. It goes back and fills in the placeholder address to point to the `_else` code. It then outputs another jump instruction, this time to point to the `_endif` but once again it uses a placeholder address to be updated later. Also once again, it pushes the address of this jump onto the stack.
+When an `_else` is encountered, it looks on the stack for the address of the last `_if` occurrence. It goes back and fills in the placeholder address in the `_if` to point to the `_else` code. It then writes another jump instruction with a placeholder address to point to the `_endif`. Once again, it pushes the address of this jump onto the assembler stack.
 
-When an `_endif` is encountered, it looks on the stack for the address of the last jump instruction pushed on the stack (it will be either an `_if` or `_else` occurrence). It goes back and fills in the placeholder address of the jump instruction to point to itself. **This means that the** `_else` **macro is completely optional** and that you could just use `_if` and `_endif` without `_else` if you wanted to. For example:
+When an `_endif` is encountered, it looks on the stack for the address of the last jump instruction pushed on the stack (it will be either an `_if` or `_else` occurrence). It goes back and fills in the placeholder address of the jump instruction to point to itself. **This means that the** `_else` **macro is completely optional** and that you could just use `_if` and `_endif` without an `_else` if you wanted to. For example:
 
 ```
 ld a,(input)
@@ -185,9 +183,9 @@ _endif
 ld (result),a
 ```
 
-This rewriting magic is achieved by getting the assembler to save the current assembler address `$` in a temporary variable and then use the `org` directive to push the assembler address back towards the code it has already written. By backing up the address pointer it can rewrite the branch placeholder address to the value of the temporary variable. It then restores from the saved assembler address and continues.
+This rewriting magic is achieved by the `JUMP_FWD` macro which saves the current assembler address `$` in a temporary variable and then use the `org` directive to push the current assembler address back towards the code it has already written. By backing up the address pointer it can then rewrite the branch placeholder address to the value of the current value. It then restores from the saved assembler address and continues.
 
-It will probably take you a few reads through to fully understand this logic but I reckon it's extremely cool and elegant. If you are familiar with the way that the Forth language implements control structures then you may grasp it immediately.
+It will probably take you a few reads through to fully understand this logic, it's fiddly but not too complicated. If you are already familiar with the way that the Forth language implements its control structures then you may grasp it immediately.
 
 Now, with these macros in hand, you can easily write nested if...else...endif logic in your assembly code without using a single jump or even a label!
 
@@ -211,11 +209,11 @@ _else
 _endif
 ```
 
-Note: I'm using `nop` here to stand it for any Z80 instruction
+Note: I'm using `nop` here to stand in for any Z80 instruction
 
 ## Switch case
 
-When you have a lot of alternatives to deal with `_if` ... `_else` ... `_endif` becomes a bit cumbersome and harder to read.
+When you have a lot of alternatives to deal with `_if` ... `_else` ... `_endif` quickly becomes cumbersome and harder to read.
 
 For example, consider the following scenario in a structured language:
 
@@ -232,7 +230,7 @@ if (a == 'a') {
 }
 ```
 
-Without some kind way of chaining "if" statements we end up with a heavily nested sequence like this:
+Without some kind way of to chain these "if" statements we end up with a heavily nested sequence like this:
 
 ```
 ld A, input
@@ -254,7 +252,7 @@ _else
 _endif
 ```
 
-One solution to this nesting is to use the `_switch` macro.
+To solve this nesting we can use the `_switch` macro.
 
 ```
 ld A, input
@@ -280,9 +278,9 @@ _switch
 _endswitch
 ```
 
-The way this works is that each case is tested in turn and if the condition is met the `_case` immediately following the test is executed. After that execution jumps to `_endswitch`.
+The way this works is that each case is tested in turn and, if a condition is met, the `_case` immediately following the test is executed. After that it jumps to `_endswitch`.
 
-If the condition fails to be met then it falls through to the next test and so on. If none of the cases execute then it falls through to the final "default" case just before the `_endswitch`.
+If the condition fails it falls through to the next case and so on. If none of the cases execute then it falls through to the final "default" case just before the `_endswitch`.
 
 The implementation of the switch macro is as follows:
 
@@ -317,7 +315,7 @@ L_%%M:
 
 Looping is another pain point for assembly language and another potential source of bugs.
 
-Consider following code written in a structured language:
+Consider following code written with a structured language:
 
 ```
 let a = 0;
@@ -340,11 +338,11 @@ LOOP1:
 LOOP_EXIT:
 ```
 
-In this case I'm testing for the _opposite_ condition to the structured version. I'm working out whether to exit the loop rather than to stay inside it. I then do some work before incrementing the counter and jumping back to the test.
+In this case I'm testing for the _opposite_ condition to the structured version. I'm deciding whether to exit the loop rather than to stay inside it. I then do some work before incrementing the counter and jumping back to do the test.
 
-This code is somewhat confusing and only gets even more confusing when loops are nested within other loops.
+This code with two jumps and two labels is somewhat confusing and only gets even more confusing when loops are nested within each other.
 
-The structured macro approach on the other hand is to use the `_do` macro.
+The structured macro way to do the same thing is to use the `_do` macro.
 
 ```
 ld A, 0
@@ -356,7 +354,27 @@ _while z
 _enddo
 ```
 
-The code bewteen `_do` and `_enddo` are repeated and a test is conducted before the `_while` which will jump to the `_enddo` if the test fails.
+The code bewteen `_do` and `_enddo` is repeated and a test is conducted just before the `_while` which will jump to the `_enddo` if the test fails.
+
+Nested loops are no trouble either (apart from preserving the state of the counter in this case).
+
+```
+ld A, 0
+_do
+    cp 2           ; test
+_while z
+    push AF
+    ld A, 0
+    _do
+        cp 5           ; test
+    _while z
+        nop             ; do something here
+        inc A
+    _enddo
+    pop AF
+    inc A
+_enddo
+```
 
 There are other looping possibilities too.
 
@@ -371,7 +389,7 @@ _do
 _until z
 ```
 
-A loop can also built using the the Z80's `djnz` instruction. This assumes the counter value is stored in the B register which is decremented automatically on each loop. When B reaches zero the loop terminates.
+A loop can also built using the the Z80's `djnz` instruction. This assumes the counter value is stored in the B register which is decremented automatically on each time through the loop. When B reaches zero the loop terminates.
 
 ```
 ld B, 10
@@ -395,7 +413,7 @@ _do
 _untilZero
 ```
 
-Finally, a loop can be made to run forever with `_do` ... `_forever` loop.
+Finally, a loop can be made to simply run forever with a `_do` ... `_forever` loop.
 
 ```
 _do
