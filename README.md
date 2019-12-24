@@ -187,7 +187,7 @@ This rewriting magic is achieved by the `JUMP_FWD` macro which saves the current
 
 It will probably take you a few reads through to fully understand this logic, it's fiddly but not too complicated. If you are already familiar with the way that the Forth language implements its control structures then you may grasp it immediately.
 
-Now, with these macros in hand, you can easily write nested if...else...endif logic in your assembly code without using a single jump or even a label!
+Now, with these macros in hand, you can easily write nested if...else...endif logic in your Assembly code without using a single jump or even a label!
 
 ```
 ld A,1
@@ -361,14 +361,14 @@ Nested loops are no trouble either (apart from preserving the state of the count
 ```
 ld A, 0
 _do
-    cp 2           ; test
+    cp 2       ; test
 _while z
     push AF
     ld A, 0
     _do
-        cp 5           ; test
+        cp 5   ; test
     _while z
-        nop             ; do something here
+        nop    ; do something here
         inc A
     _enddo
     pop AF
@@ -460,7 +460,7 @@ L_%%M:
 .endm
 ```
 
-So there you have it, a pretty painless way to improve the readability of your code and increase your productivity as an assembly language programmer (you think I'm exaggerating but, no, I genuinely believe this).
+So there you have it, a pretty painless way to improve the readability of your code and increase your productivity as an Assembly language programmer (you think I'm exaggerating but, no, I genuinely believe this).
 
 The best thing is that if you examine the final generated machine code you'll see that it doesn't look weird and doesn't add overhead to the way you might have done it natively.
 
