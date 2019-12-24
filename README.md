@@ -354,7 +354,7 @@ _while z
 _enddo
 ```
 
-The code bewteen `_do` and `_enddo` is repeated and a test is conducted just before the `_while` which will jump to the `_enddo` if the test fails.
+The code between `_do` and `_enddo` is repeated and a test is conducted just before the `_while` which will jump to the `_enddo` if the test fails.
 
 Nested loops are no trouble either (apart from preserving the state of the counter in this case).
 
