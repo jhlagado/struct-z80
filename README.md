@@ -213,7 +213,7 @@ Note: I'm using `nop` here to stand in for any Z80 instruction
 
 ## Switch case
 
-When you have a lot of alternatives to deal with `_if` ... `_else` ... `_endif` quickly becomes cumbersome and harder to read.
+When you have a lot of alternatives to deal with in your logic `_if` ... `_else` ... `_endif` can quickly become cumbersome and harder to read.
 
 For example, consider the following scenario in a structured language:
 
@@ -230,7 +230,7 @@ if (a == 'a') {
 }
 ```
 
-Without some kind way of to chain these "if" statements we end up with a heavily nested sequence like this:
+Without some way to chain these "if" statements we end up with a heavily nested sequence like this:
 
 ```
 ld A, input
@@ -252,7 +252,7 @@ _else
 _endif
 ```
 
-To solve this nesting we can use the `_switch` macro.
+To solve this nesting problem we can use the `_switch` macro.
 
 ```
 ld A, input
@@ -278,7 +278,7 @@ _switch
 _endswitch
 ```
 
-The way this works is that each case is tested in turn and, if a condition is met, the `_case` immediately following the test is executed. After that it jumps to `_endswitch`.
+The way this works is that each case is tested in turn and, if a condition is met, the `_case` immediately following the test is executed. After that it jumps to the `_endswitch`.
 
 If the condition fails it falls through to the next case and so on. If none of the cases execute then it falls through to the final "default" case just before the `_endswitch`.
 
@@ -378,7 +378,7 @@ _enddo
 
 There are other looping possibilities too.
 
-A `_do` ... `_until` loop will tests a condition just before the `_until`. _It terminates when the test is true_.
+A `_do` ... `_until` loop will test a condition just before the `_until`. _It terminates if the test is true_.
 
 ```
 ld A, 0
@@ -389,7 +389,7 @@ _do
 _until z
 ```
 
-A loop can also built using the the Z80's `djnz` instruction. This assumes the counter value is stored in the B register which is decremented automatically on each time through the loop. When B reaches zero the loop terminates.
+A loop can also built using the the Z80's own `djnz` instruction. This assumes that the counter value is stored in the B register which is decremented automatically each time through the loop. When B reaches zero the loop terminates.
 
 ```
 ld B, 10
@@ -398,7 +398,7 @@ _do
 _untilZero
 ```
 
-`_do` ... `_untilZero` loops can also be nested but because they rely on the value of register B, this register needs to be saved and restored on each iteration. For example:
+`_do` ... `_untilZero` loops can also be nested but because they rely on the value of register B, the value of this register needs to be preserved on each nesting. For example:
 
 ```
 ld B, 2
@@ -462,7 +462,7 @@ L_%%M:
 
 So there you have it, a pretty painless way to improve the readability of your code and increase your productivity as an Assembly language programmer (you think I'm exaggerating but, no, I genuinely believe this).
 
-The best thing is that if you examine the final generated machine code you'll see that it doesn't look weird and doesn't add overhead to the way you might have done it natively.
+The best thing is that if you examine the generated assembly code you'll see that it doesn't look weird and doesn't add overhead to the way you might have done it natively.
 
 Anyway, if you do give it a try let me know how it goes!
 
