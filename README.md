@@ -7,11 +7,11 @@ description: Using assembly macros to write high level code
 tags: Z80, macros, assembler, structured programming
 ```
 
-One of the great pains of writing assembly language for old-school microprocessors such as the Z80 is the complexity of implementing algorithms due to the lack of high-level control and looping structures. All you have are conditional jumps and labels and nothing help you enforce the structure of your code.
+One of the great pains of writing assembly language for old-school microprocessors such as the Z80 is the complexity of implementing algorithms due to the lack of high-level control and looping structures. All you have are conditional jumps and labels and nothing to help you enforce the structure of your code.
 
 It's not exaggerating when someone claims that [GOTOs are considered harmful](https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf) ...at least to your state of mental well-being! ;-)
 
-This lack of structure is what often ends up driving programmers toward high-levellanguages such as C which people often mistakenly think of as "low level", "assembler++" or "close to the metal". On 8-bit CPUs, however, this far from the truth and C adds a lot of overhead to your machine-cycle and memory-cell constrained code. This is why assembly language is still the tool of choice for 8-bit programming despite it also being a major source of frustration.
+This lack of structure is what often ends up driving programmers in the direction of high-levellanguages such as C which people often think of as "low level", "assembler++" or "close to the metal". On 8-bit CPUs, however, this far from the truth and C adds a lot of overhead to your machine-cycle and memory-cell constrained code. This is why assembly language is still the tool of choice for 8-bit programming despite it also being a major source of frustration.
 
 Macros are a huge boon to writing assembly language. Recently I starting using a set inspired by a coding pattern invented by Garth Wilson and (quite separately by) Dave Keenan which enabled me to write structured programs in assembly.
 
@@ -33,7 +33,7 @@ See:
 
 ## Create a stack with assembler variables.
 
-Programming structures are recursive by nature and so our first task should be to build a stack. Assemblers weren't really designed for meta-programming but you can implement a stack structure by using a bucket brigade of re-assignable assembler variables. I've made my stack twelve levels deep but you may decide to make this stack even deeper which is an easy thing to do.
+Programming structures are recursive by nature and so it stands to reason that our first task should be to build a stack. Assemblers weren't really designed for meta-programming but you can implement a stack structure by using a bucket brigade of re-assignable assembler variables. I've made my stack twelve levels deep but you may decide to make this stack deeper which is an easy thing to do.
 
 ```
 STRUC_COUNT .set 0
@@ -100,7 +100,7 @@ Also we need a utility macro `JUMP_FWD` with which we can use to go back and rew
 
 ## Implement structured programming macros:
 
-In assembly language, program logic is obscured by the way it gets expressed in terms of state flags and branches. Consider this simple example of inverting a binary value which we'll first express in a structured language:
+In assembly language, program logic is obscured by the way it gets expressed in terms of state flags and branches. Consider this simple example of inverting a binary value which we'll first express by using a structured language:
 
 ```
 let a = input;
@@ -112,7 +112,7 @@ if (a == 0) {
 let result = a;
 ```
 
-In assembly language, we could load the accumulator with the input and compare it with zero. This may or may not set the zero flag. If the flag is false (test fails) we could jump conditionally over the code in the "then" section and go to the "else" section. If the test succeeds we could execute the "then" section but then we want to skip over the "else" section with an unconditional branch to the end of the if statement (i.e. to "endif").
+In assembly language, we could do the same thing by loading the accumulator with the input and comparing it with zero. This may or may not set the zero flag. If the flag is false (test fails) we conditionally jump over the code in the "then" section and go straight to the "else" section. If the test succeeds we execute the "then" section but now we want to skip over the "else" section with an unconditional branch to the end of the if statement (i.e. to "endif").
 
 ```
     ld a,(input)
@@ -127,7 +127,7 @@ endIfLabel:
     ld (result),a
 ```
 
-So in a typical situation, we have two branches and at least two labels (the thenLabel is not really needed in this case). When logic gets nested, this can lead to difficult to read assembly code. Surely a more natural way to read this code might be more like this?
+So in a typical situation, we have two branches and at least two labels (the thenLabel is not really needed in this case). When logic gets nested, this can lead to difficult to read assembly code. Surely a more natural way to express this code would be a little more like this?
 
 ```
 ld a,(input)
@@ -140,9 +140,7 @@ _endif
 ld (result),a
 ```
 
-In this arrangement we are using macros. I am using an underscore in front to distinguish these macros from other uses of these words.
-
-You'll notice that in this code, we have no explicit branches and no labels to confuse the reader. Each macro `_if`, `_else` and `_endif` expands out into code that is very similar to the hand-written assembly code.
+In this code we are using macros. I am using an underscore in front to distinguish these macros from other uses of these words. You'll notice that we have no explicit branches and no labels. Each `_if`, `_else` and `_endif` macro expands out into code that is very similar to the hand-written assembly code.
 
 ```
 .macro _if, flag
@@ -168,11 +166,11 @@ Note: `L_%%M` is a local label which is unique to each macro invocation. \$ is t
 
 The way this works is the `_if` sets up a jump on condition flag which, if the test fails, branches to an `_else` or the `_endif` depending on which occurs first.
 
-The problem to solve is that `_if` cannot know where the `_else` or `_endif` will occur so it writes the opcode for the jump and a placeholder value in the jump address. It then pushes the address of this jump on the assembler stack so it can be found again later.
+The problem to solve is that `_if` cannot know where the `_else` or `_endif` will occur so it writes the jump instruction with a placeholder for the jump address. It then pushes the address of this jump on the assembler stack so it can be found again later.
 
 When an `_else` is encountered, it looks on the stack for the address of the last `_if` occurrence. It goes back and fills in the placeholder address in the `_if` to point to the `_else` code. It then writes another jump instruction with a placeholder address to point to the `_endif`. Once again, it pushes the address of this jump onto the assembler stack.
 
-When an `_endif` is encountered, it looks on the stack for the address of the last jump instruction pushed on the stack (it will be either an `_if` or `_else` occurrence). It goes back and fills in the placeholder address of the jump instruction to point to itself. **This means that the** `_else` **macro is completely optional** and that you could just use `_if` and `_endif` without an `_else` if you wanted to. For example:
+When an `_endif` is encountered, it looks on the stack for the address of the last jump instruction pushed on the stack (it will be either an `_if` or `_else` occurrence). Then it goes back and fills in the placeholder address of the jump instruction to point to itself. **This means that the** `_else` **macro is completely optional** and that you could just use `_if` and `_endif` without an `_else` if you wanted to. For example:
 
 ```
 ld a,(input)
@@ -183,9 +181,9 @@ _endif
 ld (result),a
 ```
 
-This rewriting magic is achieved by the `JUMP_FWD` macro which saves the current assembler address `$` in a temporary variable and then use the `org` directive to push the current assembler address back towards the code it has already written. By backing up the address pointer it can then rewrite the branch placeholder address to the value of the current value. It then restores from the saved assembler address and continues.
+This rewriting magic is achieved by the `JUMP_FWD` macro which saves the current assembler address `$` in a temporary variable and then uses the `org` directive to move the current assembler address back towards the code it has already written. By backing up the assembler's address pointer it can then rewrite the branch placeholder address to the value of the saved value. It then restores from the saved assembler address and continues.
 
-It will probably take you a few reads through to fully understand this logic, it's fiddly but not too complicated. If you are already familiar with the way that the Forth language implements its control structures then you may grasp it immediately.
+It will probably take you a few reads through to fully understand this logic, it's fiddly but not too complicated. If you are already familiar with the way the Forth language implements its control structures then you may grasp it immediately.
 
 Now, with these macros in hand, you can easily write nested if...else...endif logic in your Assembly code without using a single jump or even a label!
 
@@ -211,11 +209,9 @@ _endif
 
 Note: I'm using `nop` here to stand in for any Z80 instruction
 
-## Switch case
+## Avoiding deep nesting with Switch
 
-When you have a lot of alternatives to deal with in your logic `_if` ... `_else` ... `_endif` can quickly become cumbersome and harder to read.
-
-For example, consider the following scenario in a structured language:
+When you have a lot of alternatives to deal with in your conditional logic, `_if` ... `_else` ... `_endif` can quickly become cumbersome and hard to read. For example, consider the following scenario in a structured language:
 
 ```
 let a = input
@@ -252,7 +248,7 @@ _else
 _endif
 ```
 
-To solve this nesting problem we can use the `_switch` macro.
+This is pretty ugly but you can solve this nesting by using the `_switch` macro.
 
 ```
 ld A, input
@@ -278,9 +274,9 @@ _switch
 _endswitch
 ```
 
-The way this works is that each case is tested in turn and, if a condition is met, the `_case` immediately following the test is executed. After that it jumps to the `_endswitch`.
+The way `_switch` works is that each case is tested in turn and, if a condition is met, the `_case` immediately following the test is executed. After that it jumps to the `_endswitch`.
 
-If the condition fails it falls through to the next case and so on. If none of the cases execute then it falls through to the final "default" case just before the `_endswitch`.
+If the condition fails it falls through to the next case and so on. If none of these cases execute then it falls through to the final "default" case just before the `_endswitch`.
 
 The implementation of the switch macro is as follows:
 
@@ -340,7 +336,7 @@ LOOP_EXIT:
 
 In this case I'm testing for the _opposite_ condition to the structured version. I'm deciding whether to exit the loop rather than to stay inside it. I then do some work before incrementing the counter and jumping back to do the test.
 
-This code with two jumps and two labels is somewhat confusing and only gets even more confusing when loops are nested within each other.
+This code with two jumps and two labels is somewhat confusing and the situation only gets more confusing when loops are nested within one another.
 
 The structured macro way to do the same thing is to use the `_do` macro.
 
@@ -356,7 +352,7 @@ _enddo
 
 The code between `_do` and `_enddo` is repeated and a test is conducted just before the `_while` which will jump to the `_enddo` if the test fails.
 
-Nested loops are no trouble either (apart from preserving the state of the counter in this case).
+Nested loops are no trouble either (apart from the need to preserve the state of the counter variable in this case).
 
 ```
 ld A, 0
@@ -449,20 +445,18 @@ L_%%M:
 L_%%M:
 .endm
 
-.macro _forever
-    jp STRUC_TOP
-    STRUC_POP
-.endm
-
 .macro _untilZero
     djnz STRUC_TOP
     STRUC_POP
 .endm
+
+.macro _forever
+    jp STRUC_TOP
+    STRUC_POP
+.endm
 ```
 
-So there you have it, a pretty painless way to improve the readability of your code and increase your productivity as an Assembly language programmer (you think I'm exaggerating but, no, I genuinely believe this).
-
-The best thing is that if you examine the generated assembly code you'll see that it doesn't look weird and doesn't add overhead to the way you might have done it natively.
+So there you have it, a pretty painless way to improve the readability of your code and increase your productivity as an assembly language programmer. The best thing is that if you examine the generated assembly code you'll see that it doesn't look weird or add overhead to the way you might have writeen this code natively.
 
 Anyway, if you do give it a try let me know how it goes!
 
