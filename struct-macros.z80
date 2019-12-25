@@ -72,7 +72,7 @@ STRUC_TOP .set 0
 ; _endif
 
 .macro _if, flag
-    jr flag, L_%%M
+    jp flag, L_%%M
     jp $              ; placeholder jump to _else or _endif
     STRUC_PUSH $
 L_%%M:
@@ -113,7 +113,7 @@ L_%%M:
 .endm
 
 .macro _case, flag
-    jr flag, L_%%M
+    jp flag, L_%%M
     jp $            ; placeholder jump to endcase
     STRUC_PUSH $
 L_%%M:
@@ -141,7 +141,7 @@ L_%%M:
 .endm
 
 .macro _while, flag
-    jr flag, L_%%M
+    jp flag, L_%%M
     jp $            ; placeholder jump to _enddo
     STRUC_PUSH $
 L_%%M:
@@ -159,7 +159,7 @@ L_%%M:
 ; _until flag
 
 .macro _until, flag
-    jr flag, L_%%M
+    jp flag, L_%%M
     jp STRUC_TOP
     STRUC_POP
 L_%%M:
