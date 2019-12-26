@@ -344,7 +344,7 @@ The structured macro way to do the same thing is to use the `_do` macro.
 ld A, 0
 _do
     cp 10           ; test
-_while z
+    _while z
     nop             ; do something here
     inc A
 _enddo
@@ -358,26 +358,41 @@ Sometimes it's more convenient to terminate on the success of a test.
 ld A, 0
 _do
     cp 10           ; test
-_until nz
+    _until nz
     nop             ; do something here
     inc A
 _enddo
 ```
 
-Note: both `_while` and `_until` may appear more than once inside a loop. `_while` terminates the loop when its test fails. `_until` terminates the loop when its test succeeds.
+An alternative to terminating a loop is to "continue" a loop, that is, jump to the start of a loop if a test succeeds.
 
-Nested loops are no trouble either (apart from the need to preserve the state of the counter variable in this case).
+```
+ld B, 0
+_do
+    ld A,B
+    and $01          ; test
+    _continue z
+                     ; get here only on even values
+    inc B            ; test
+    _until z
+_enddo
+```
+
+Note: both `_while`, `_until` and `_continue` are optional and may appear zero or more times inside a loop.
+
+Loops can be nested easily as long as the values of counter variables are preserved.
 
 ```
 ld A, 0
 _do
     cp 2       ; test
-_while z
+    _while z
     push AF
     ld A, 0
     _do
         cp 5   ; test
-    _while z
+        _while z
+
         nop    ; do something here
         inc A
     _enddo
@@ -395,7 +410,7 @@ _do
 _djnz
 ```
 
-Note: `_while` and `_until` both work inside `_do`...`_djnz` loops the same way as in `_do`...`_enddo` loops.
+Note: `_while`, `_until` and `_continue` all work inside `_do`...`_djnz` loops exactly the same way as they do in `_do`...`_enddo` loops.
 
 The implementation of macros for looping are as follows:
 
@@ -419,6 +434,10 @@ L_%%M:
     JUMP_FWD
 .endm
 
+.macro _continue, flag
+    jp flag, STRUC_TOP      ; jump start of loop
+.endm
+
 .macro _enddo
     jp STRUC_TOP
     JUMP_FWD
@@ -432,7 +451,7 @@ L_%%M:
 .endm
 ```
 
-So there you have it, a pretty painless way to improve the readability of your code and increase your productivity as an assembly language programmer. The best thing is that if you examine the generated assembly code you'll see that it doesn't look weird or add overhead to the way you might have writeen this code natively.
+So there you have it, a pretty painless way to improve the readability of your code and increase your productivity as an assembly language programmer. The best thing is that if you examine the generated assembly code you'll see that it doesn't look weird or add overhead to the way you might have written this code natively.
 
 Anyway, if you do give it a try let me know how it goes!
 
