@@ -132,7 +132,13 @@ L_%%M:
 
 ; _do
 ;     ...test
-;     _break flag
+;     _while flag
+;
+;     ...test
+;     _until flag
+;
+;     ...test
+;     _continue flag
 ;     ...
 ; _enddo
 
@@ -169,7 +175,7 @@ L_%%M:
 ;     ...test
 ; _djnz
 
-.macro _djnz
+.macro _djnz                ; start of loop
     djnz STRUC_TOP
     JUMP_FWD
     STRUC_POP
