@@ -372,17 +372,16 @@ _while z
 _enddo
 ```
 
-There are other looping possibilities too.
-
-A `_do` ... `_until` loop will test a condition just before the `_until`. _It terminates if the test is true_.
+Sometimes it's more convenient to terminate on the success of a test
 
 ```
 ld A, 0
 _do
+    cp 10           ; test
+_until nz
     nop             ; do something here
     inc A
-    cp 10           ; test
-_until z
+_enddo
 ```
 
 A loop can also built using the the Z80's own `djnz` instruction. This assumes that the counter value is stored in the B register which is decremented automatically each time through the loop. When B reaches zero the loop terminates.
@@ -391,10 +390,10 @@ A loop can also built using the the Z80's own `djnz` instruction. This assumes t
 ld B, 10
 _do
     nop             ; do something here
-_untilZero
+_djnz
 ```
 
-`_do` ... `_untilZero` loops can also be nested but because they rely on the value of register B, the value of this register needs to be preserved on each nesting. For example:
+Note: `_do` ... `_djnz` loops can also be nested but because they rely on the value of register B, the value of this register needs to be preserved on each nesting. For example:
 
 ```
 ld B, 2
@@ -403,10 +402,10 @@ _do
     ld B, 3
     _do
         nop
-    _untilZero
+    _djnz
     ld B,C      ; restore B
     nop
-_untilZero
+_djnz
 ```
 
 Finally, a loop can be made to simply run forever with a `_do` ... `_forever` loop.
@@ -421,37 +420,33 @@ The implementation of macros for looping are as follows:
 
 ```
 .macro _do
+    jr L_%%M
+    jp $                    ; placeholder jump to enddo
     STRUC_PUSH $
+L_%%M:
 .endm
 
 .macro _while, flag
-    jr flag, L_%%M
-    jp $            ; placeholder jump to _enddo
-    STRUC_PUSH $
-L_%%M:
-.endm
-
-.macro _enddo
-    jr STRUC_2
+    jr flag L_%%M
+    jp STRUC_TOP - 3        ; jump to jump to enddo
     JUMP_FWD
-    STRUC_POP
-    STRUC_POP
+L_%%M:
 .endm
 
 .macro _until, flag
-    jr flag, L_%%M
-    jp STRUC_TOP
-    STRUC_POP
-L_%%M:
+    jp flag, STRUC_TOP - 3  ; jump to jump to enddo
+    JUMP_FWD
 .endm
 
-.macro _untilZero
+.macro _enddo
+    jp STRUC_TOP
+    JUMP_FWD
+    STRUC_POP
+.endm
+
+.macro _djnz
     djnz STRUC_TOP
-    STRUC_POP
-.endm
-
-.macro _forever
-    jp STRUC_TOP
+    JUMP_FWD
     STRUC_POP
 .endm
 ```
