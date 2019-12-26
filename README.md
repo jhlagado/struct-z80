@@ -410,7 +410,7 @@ _do
 _djnz
 ```
 
-`_while` and `_until` both work inside a `_do`...`_djnz` loop.
+`_while` and `_until` both work inside `_do`...`_djnz` loops.
 
 The implementation of macros for looping are as follows:
 
