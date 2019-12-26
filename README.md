@@ -395,22 +395,7 @@ _do
 _djnz
 ```
 
-Note: `_do` ... `_djnz` loops can also be nested but because they rely on the value of register B, the value of this register needs to be preserved on each nesting. For example:
-
-```
-ld B, 2
-_do
-    ld C,B      ; save B in C
-    ld B, 3
-    _do
-        nop
-    _djnz
-    ld B,C      ; restore B
-    nop
-_djnz
-```
-
-`_while` and `_until` both work inside `_do`...`_djnz` loops.
+Note: `_while` and `_until` both work inside `_do`...`_djnz` loops the same way as in `_do`...`_enddo` loops.
 
 The implementation of macros for looping are as follows:
 
