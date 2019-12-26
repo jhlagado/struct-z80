@@ -11,7 +11,7 @@ One of the great pains of writing assembly language for old-school microprocesso
 
 It's not exaggerating when someone claims that [GOTOs are considered harmful](https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf) ...at least to your state of mental well-being! ;-)
 
-This lack of structure is what often ends up driving programmers in the direction of high-levellanguages such as C which people often think of as "low level", "assembler++" or "close to the metal". On 8-bit CPUs, however, this far from the truth and C adds a lot of overhead to your machine-cycle and memory-cell constrained code. This is why assembly language is still the tool of choice for 8-bit programming despite it also being a major source of frustration.
+This lack of structure is what often ends up driving programmers in the direction of high-level languages such as C which people often think of as "low level", "assembler++" or "close to the metal". On 8-bit CPUs, however, this far from the truth and C adds a lot of overhead to your machine-cycle and memory-cell constrained code. This is why assembly language is still the tool of choice for 8-bit programming despite it also being a major source of frustration.
 
 Macros are a huge boon to writing assembly language. Recently I starting using a set inspired by a coding pattern invented by Garth Wilson and (quite separately by) Dave Keenan which enabled me to write structured programs in assembly.
 
@@ -352,6 +352,20 @@ _enddo
 
 The code between `_do` and `_enddo` is repeated and a test is conducted just before the `_while` which will jump to the `_enddo` if the test fails.
 
+Sometimes it's more convenient to terminate on the success of a test.
+
+```
+ld A, 0
+_do
+    cp 10           ; test
+_until nz
+    nop             ; do something here
+    inc A
+_enddo
+```
+
+Note: both `_while` and `_until` may appear more than once inside a loop. `_while` terminates the loop when its test fails. `_until` terminates the loop when its test succeeds.
+
 Nested loops are no trouble either (apart from the need to preserve the state of the counter variable in this case).
 
 ```
@@ -368,18 +382,6 @@ _while z
         inc A
     _enddo
     pop AF
-    inc A
-_enddo
-```
-
-Sometimes it's more convenient to terminate on the success of a test
-
-```
-ld A, 0
-_do
-    cp 10           ; test
-_until nz
-    nop             ; do something here
     inc A
 _enddo
 ```
@@ -408,13 +410,7 @@ _do
 _djnz
 ```
 
-Finally, a loop can be made to simply run forever with a `_do` ... `_forever` loop.
-
-```
-_do
-    nop             ; do something here
-_forever
-```
+`_while` and `_until` both work inside a `_do`...`_djnz` loop.
 
 The implementation of macros for looping are as follows:
 
