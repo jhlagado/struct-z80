@@ -344,7 +344,7 @@ The structured macro way to do the same thing is to use the `_do` macro.
 ld A, 0
 _do
     cp 10           ; test
-    _while z
+    _while c
     nop             ; do something here
     inc A
 _enddo
@@ -358,27 +358,32 @@ Sometimes it's more convenient to terminate on the success of a test.
 ld A, 0
 _do
     cp 10           ; test
-    _until nz
+    _until ncs
     nop             ; do something here
     inc A
 _enddo
 ```
 
-An alternative to terminating a loop is to "continue" a loop, that is, jump to the start of a loop if a test succeeds.
+You can unconditionally terminate a loop by using the `_break` macro.
+
+An alternative to terminating a loop is to `_continue` a loop, that is, tp unconditionally jump to the start of a loop.
 
 ```
 ld B, 0
 _do
     ld A,B
     and $01          ; test
-    _continue z
+    _if nz
+        nop
+        _continue
+    _endif
                      ; get here only on even values
     inc B            ; test
     _until z
 _enddo
 ```
 
-Note: both `_while`, `_until` and `_continue` are optional and may appear zero or more times inside a loop.
+Note: both `_while`, `_until`, `_break` and `_continue` are optional and may appear zero or more times inside a loop.
 
 Loops can be nested easily as long as the values of counter variables are preserved.
 
@@ -410,7 +415,7 @@ _do
 _djnz
 ```
 
-Note: `_while`, `_until` and `_continue` all work inside `_do`...`_djnz` loops exactly the same way as they do in `_do`...`_enddo` loops.
+Note: `_while`, `_until`, `_break` and `_continue` all work inside `_do`...`_djnz` loops exactly the same way as they do in `_do`...`_enddo` loops.
 
 The implementation of macros for looping are as follows:
 
@@ -434,8 +439,13 @@ L_%%M:
     JUMP_FWD
 .endm
 
-.macro _continue, flag
-    jp flag, STRUC_TOP      ; jump start of loop
+.macro _continue
+    jp STRUC_TOP            ; start of loop
+.endm
+
+.macro _break
+    jp STRUC_TOP - 3        ; jump to jump to enddo
+    JUMP_FWD
 .endm
 
 .macro _enddo
