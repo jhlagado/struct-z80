@@ -364,7 +364,21 @@ _do
 _enddo
 ```
 
-Note: both `_while`, `_until` are optional and may appear zero or more times inside a loop.
+An alternative to terminating a loop is to `_continue` a loop, that is, to conditionally jump to the start of a loop.
+
+```
+ld B, 0
+_do
+    ld A,B
+    and $01          ; test
+    _continue nz
+                     ; get here only on even values
+    inc B            ; test
+    _until z
+_enddo
+```
+
+Note: both `_while`, `_until`, and `_continue` are optional and may appear zero or more times inside a loop.
 
 Loops can be nested easily as long as the values of counter variables are preserved.
 
@@ -396,7 +410,7 @@ _do
 _djnz
 ```
 
-Note: `_while`, `_until` work inside `_do`...`_djnz` loops exactly the same way as they do in `_do`...`_enddo` loops.
+Note: `_while`, `_until`, and `_continue` all work inside `_do`...`_djnz` loops exactly the same way as they do in `_do`...`_enddo` loops.
 
 The implementation of macros for looping are as follows:
 
@@ -420,13 +434,8 @@ L_%%M:
     JUMP_FWD
 .endm
 
-.macro _continue
-    jp STRUC_TOP            ; start of loop
-.endm
-
-.macro _break
-    jp STRUC_TOP - 3        ; jump to jump to enddo
-    JUMP_FWD
+.macro _continue, flag
+    jp flag, STRUC_TOP            ; start of loop
 .endm
 
 .macro _enddo
