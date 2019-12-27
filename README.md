@@ -364,26 +364,7 @@ _do
 _enddo
 ```
 
-You can unconditionally terminate a loop by using the `_break` macro.
-
-An alternative to terminating a loop is to `_continue` a loop, that is, tp unconditionally jump to the start of a loop.
-
-```
-ld B, 0
-_do
-    ld A,B
-    and $01          ; test
-    _if nz
-        nop
-        _continue
-    _endif
-                     ; get here only on even values
-    inc B            ; test
-    _until z
-_enddo
-```
-
-Note: both `_while`, `_until`, `_break` and `_continue` are optional and may appear zero or more times inside a loop.
+Note: both `_while`, `_until` are optional and may appear zero or more times inside a loop.
 
 Loops can be nested easily as long as the values of counter variables are preserved.
 
@@ -415,7 +396,7 @@ _do
 _djnz
 ```
 
-Note: `_while`, `_until`, `_break` and `_continue` all work inside `_do`...`_djnz` loops exactly the same way as they do in `_do`...`_enddo` loops.
+Note: `_while`, `_until` work inside `_do`...`_djnz` loops exactly the same way as they do in `_do`...`_enddo` loops.
 
 The implementation of macros for looping are as follows:
 
@@ -460,6 +441,8 @@ L_%%M:
     STRUC_POP
 .endm
 ```
+
+Important! `_while` or `_until` must occur as top-level items inside a loop. Don't use `_while` or `_until` nested inside control logic like `_if` or `_switch`. Your code won't work as intended. Fortunately `_while` or `_until` have their own logical operations so nesting inside other logic is less necessary. Anyway if you find that you need to branch out of a loop while nested inside control logic, use a jump like `jp` or `jr`.
 
 So there you have it, a pretty painless way to improve the readability of your code and increase your productivity as an assembly language programmer. The best thing is that if you examine the generated assembly code you'll see that it doesn't look weird or add overhead to the way you might have written this code natively.
 
