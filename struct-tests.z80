@@ -27,8 +27,10 @@ _do
         nop
         dec A
     _until Z
+    _enddo
     dec B
 _until Z
+_enddo
 nop
 
 ld a,30
@@ -61,5 +63,5 @@ nop
 ld B, 5
 _do
     nop
-_untilZero
+_djnz
 nop

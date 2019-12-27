@@ -344,7 +344,7 @@ The structured macro way to do the same thing is to use the `_do` macro.
 ld A, 0
 _do
     cp 10           ; test
-    _while c
+_while c
     nop             ; do something here
     inc A
 _enddo
@@ -358,7 +358,7 @@ Sometimes it's more convenient to terminate on the success of a test.
 ld A, 0
 _do
     cp 10           ; test
-    _until ncs
+_until ncs
     nop             ; do something here
     inc A
 _enddo
@@ -374,7 +374,7 @@ _do
     _continue nz
                      ; get here only on even values
     inc B            ; test
-    _until z
+_until z
 _enddo
 ```
 
@@ -386,12 +386,12 @@ Loops can be nested easily as long as the values of counter variables are preser
 ld A, 0
 _do
     cp 2       ; test
-    _while z
+_while z
     push AF
     ld A, 0
     _do
         cp 5   ; test
-        _while z
+    _while z
 
         nop    ; do something here
         inc A
