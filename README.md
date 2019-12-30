@@ -35,6 +35,7 @@ See:
 
 1. [Control structures](./struct.md)
 2. [Looping structures](./dloop.md)
+3. [Structures stacks](./stack.md)
 
 ## Installation
 
