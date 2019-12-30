@@ -38,9 +38,3 @@ _switch
     ld a, 255           ; default case
 _endswitch
 nop
-
-ld B, 5
-_do
-    nop
-_djnz
-nop
