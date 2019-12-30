@@ -1,3 +1,4 @@
+.include "struct-macros.z80"
 .include "dloop-macros.z80"
 
 ld B, 3
@@ -25,4 +26,30 @@ ld B, 5
 _do
     nop
 _djnz
+nop
+
+ld C, 0
+_do
+    inc B
+    ld A,B
+    cp 10
+    _while c
+    ld A, $01
+    and B
+    _if nz
+        _continue
+    _endif
+    inc C
+_until Z
+_enddo
+nop
+
+ld A, 0
+_do
+    cp 5
+    _if nc
+        _break
+    _endif
+    inc A
+_enddo
 nop
