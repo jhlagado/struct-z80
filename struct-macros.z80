@@ -66,12 +66,6 @@ STRUC_TOP .set 0
     org CUR_ADR
 .endm
 
-; _if flag
-;     ...
-; _else
-;     ...
-; _endif
-
 .macro _if, flag
     jp flag, L_%%M
     jp $              ; placeholder jump to _else or _endif
@@ -89,22 +83,6 @@ L_%%M:
     JUMP_FWD
     STRUC_POP
 .endm
-
-; _switch
-;
-;     ...test
-;     _case flag
-;         ...
-;     _endcase
-;
-;     ...test
-;     _case flag
-;         ...
-;     _endcase
-;
-;     ...       ; default case
-;
-; _endswitch
 
 .macro _switch
     jr L_%%M
@@ -127,57 +105,6 @@ L_%%M:
 .endm
 
 .macro _endswitch
-    JUMP_FWD
-    STRUC_POP
-.endm
-
-; _do
-;     ...test
-; _while flag
-;
-;     ...test
-; _until flag
-;
-;     ...test
-; _continue flag
-;     ...
-; _enddo
-
-.macro _do
-    jr L_%%M
-    jp $                    ; placeholder jump to enddo
-    STRUC_PUSH $
-L_%%M:
-.endm
-
-.macro _while, flag
-    jr flag, L_%%M
-    jp STRUC_TOP - 3        ; jump to jump to enddo
-    JUMP_FWD                ; needed?
-L_%%M:
-.endm
-
-.macro _until, flag
-    jp flag, STRUC_TOP - 3  ; jump to jump to enddo
-    JUMP_FWD                ; needed?
-.endm
-
-.macro _continue, flag
-    jp flag, STRUC_TOP            ; start of loop
-.endm
-
-.macro _enddo
-    jp STRUC_TOP
-    JUMP_FWD
-    STRUC_POP
-.endm
-
-; _do
-;     ...test
-; _djnz
-
-.macro _djnz                ; start of loop
-    djnz STRUC_TOP
     JUMP_FWD
     STRUC_POP
 .endm

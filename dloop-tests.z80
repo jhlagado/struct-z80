@@ -1,0 +1,28 @@
+.include "dloop-macros.z80"
+
+ld B, 3
+_do
+    dec B
+_while nz
+    nop
+_enddo
+nop
+
+ld B, 5
+_do
+    ld A,3
+    _do
+        nop
+        dec A
+    _until Z
+    _enddo
+    dec B
+_until Z
+_enddo
+nop
+
+ld B, 5
+_do
+    nop
+_djnz
+nop
