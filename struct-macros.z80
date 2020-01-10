@@ -86,6 +86,14 @@ L_%%M:
     STRUC_POP
 .endm
 
+.macro _andif, flag ; continues _if test with a second test if first test was true
+    jp flag, L_%%M
+    jp $              ; placeholder jump to _endif
+    STRUC_FWD
+    STRUC_TOP .set $  ;reuse top of stack
+L_%%M:
+.endm
+
 ; switch
 
 .macro _switch
